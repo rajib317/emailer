@@ -1,0 +1,9 @@
+####Login Route
+POST http://localhost:3002/email
+Content-Type: application/json
+
+{
+    "to":"rajib317@gmail.com",
+    "subject":"idur@yahoo.co.in",
+    "text":"Howdy!!"
+}

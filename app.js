@@ -4,11 +4,12 @@ require('dotenv').config();
 const PORT = process.env.PORT;
 
 const requestHandler = (request, response) => {
-  if (!(request.method === 'GET' && request.url === '/email')) {
+  if (!(request.method === 'POST' && request.url === '/email')) {
     response.writeHead(404, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify({ message: `Not found` }));
     return;
   }
+
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
@@ -18,24 +19,36 @@ const requestHandler = (request, response) => {
     },
   });
 
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: 'rajib317@gmail.com',
-    subject: process.env.EMAIL_SUBJECT,
-    text: 'Lipsum Dolor sit amet',
-  };
+  const chunks = [];
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-      response.writeHead(500, { 'Content-Type': 'text/plain' });
-      response.end('Internal Server Error');
-    } else {
-      response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(
-        JSON.stringify({ message: 'Email sent', details: info.response })
-      );
+  request.on('data', (chunk) => {
+    chunks.push(chunk);
+  });
+  request.on('end', () => {
+    data = Buffer.concat(chunks);
+    const stringData = data.toString();
+
+    const { to, subject, text } = JSON.parse(stringData);
+
+    if (!to || !subject || !text) {
+      response.writeHead(402, { 'Content-Type': 'text/json' });
+      response.end(JSON.stringify({ message: 'Bad format' }));
+      return;
     }
+    mailOptions = { from: process.env.EMAIL_FROM, to, subject, text };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+        response.writeHead(500, { 'Content-Type': 'text/json' });
+        response.end(JSON.stringify({ message: 'Internal Server Error' }));
+      } else {
+        response.writeHead(200, { 'Content-Type': 'application/json' });
+        response.end(
+          JSON.stringify({ message: 'Email sent', details: info.response })
+        );
+      }
+    });
   });
 };
 
