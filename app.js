@@ -1,25 +1,25 @@
 const http = require('http');
 const nodemailer = require('nodemailer');
 
-const PORT = 3000;
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  auth: {
-    user: 'rajib317@gmail.com',
-    pass: 'xsmtpsib-2b6b907002c295354eea145f3a0cdaced26baa8dcbffbc50b6d3b4e3b87e9f49-bYajKmJEBzyUAtNF',
-  },
-});
-
-const mailOptions = {
-  from: 'noreply@rtrspty.site',
-  to: 'rajib317@google.com',
-  subject: 'Sending Email using Node.js',
-  text: 'Lipsum Dolor sit amet',
-};
+const PORT = process.env.PORT;
 
 const requestHandler = (request, response) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    auth: {
+      user: 'rajib317@gmail.com',
+      pass: 'somepassword',
+    },
+  });
+
+  const mailOptions = {
+    from: 'noreply@rtrspty.site',
+    to: 'rajib317@gmail.com',
+    subject: 'Sending Email using Node.js',
+    text: 'Lipsum Dolor sit amet',
+  };
+
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
       console.log(error);
