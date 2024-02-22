@@ -1,22 +1,27 @@
 const http = require('http');
 const nodemailer = require('nodemailer');
-
+require('dotenv').config();
 const PORT = process.env.PORT;
 
 const requestHandler = (request, response) => {
+  if (!(request.method === 'GET' && request.url === '/email')) {
+    response.writeHead(404, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ message: `Not found` }));
+    return;
+  }
   const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     auth: {
-      user: 'rajib317@gmail.com',
-      pass: 'somepassword',
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
   const mailOptions = {
-    from: 'noreply@rtrspty.site',
+    from: process.env.EMAIL_FROM,
     to: 'rajib317@gmail.com',
-    subject: 'Sending Email using Node.js',
+    subject: process.env.EMAIL_SUBJECT,
     text: 'Lipsum Dolor sit amet',
   };
 
@@ -27,7 +32,9 @@ const requestHandler = (request, response) => {
       response.end('Internal Server Error');
     } else {
       response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ message: `Email sent: ${info.response}` }));
+      response.end(
+        JSON.stringify({ message: 'Email sent', details: info.response })
+      );
     }
   });
 };
